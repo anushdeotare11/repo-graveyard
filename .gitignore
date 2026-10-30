@@ -1,0 +1,25 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local project data cache
+data/
+./data/
+data/*
+!data/.gitkeep
+
+# Environments & virtualenvs
+venv/
+.venv/
+./venv/
+./.venv/
+env/
+.env
+ENV/
+
+# IDE / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

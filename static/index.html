@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Repo Graveyard • Where Abandoned Code Rests</title>
+  <meta name="description" content="A fully local tool that turns abandoned git repositories into an atmospheric, shareable graveyard.">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Atmospheric Night Sky Backdrop -->
+  <div class="sky-background" aria-hidden="true">
+    <div class="stars"></div>
+    <div class="moon">
+      <div class="moon-crater c1"></div>
+      <div class="moon-crater c2"></div>
+      <div class="moon-crater c3"></div>
+      <div class="moon-glow"></div>
+    </div>
+    <div class="fog-layer fog-back"></div>
+    <div class="fog-layer fog-mid"></div>
+    <div class="fog-layer fog-front"></div>
+  </div>
+
+  <div class="app-layout">
+    <!-- Top Atmospheric Header -->
+    <header class="graveyard-header">
+      <div class="header-main-row">
+        <div class="brand-wrap">
+          <div class="lantern-icon-wrap" title="Local flame burns steady">
+            <svg class="lantern-svg" viewBox="0 0 40 50" width="36" height="45">
+              <path d="M12 8 L28 8 L32 16 L8 16 Z" fill="#2d3748" stroke="#4a5568" stroke-width="2"/>
+              <rect x="10" y="16" width="20" height="24" rx="2" fill="rgba(255, 170, 0, 0.15)" stroke="#4a5568" stroke-width="2"/>
+              <ellipse cx="20" cy="28" rx="6" ry="9" fill="#ff9e3b" class="flame-glow"/>
+              <ellipse cx="20" cy="29" rx="3" ry="5" fill="#fff5b8" class="flame-core"/>
+              <path d="M8 40 L32 40 L28 46 L12 46 Z" fill="#2d3748" stroke="#4a5568" stroke-width="2"/>
+              <circle cx="20" cy="5" r="4" fill="none" stroke="#718096" stroke-width="2"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="cemetery-title">REPO GRAVEYARD</h1>
+            <p class="cemetery-tagline">Where dead code rests, unresolved TODOs haunt, and local spirits speak.</p>
+          </div>
+        </div>
+
+        <div class="header-meta-badges">
+          <span class="badge badge-privacy" title="Runs 100% offline on your machine">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            100% Local & Private
+          </span>
+          <span id="ollamaStatusBadge" class="badge badge-ai" title="Ollama AI inference status">
+            <span class="pulse-dot"></span>
+            <span id="ollamaStatusText">Ollama: Checking...</span>
+          </span>
+          <button id="demoModeBtn" class="btn btn-secondary btn-sm" title="Load fictional sample graveyard">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg>
+            Demo Mode
+          </button>
+        </div>
+      </div>
+
+      <!-- Action & Scan Toolbar -->
+      <div class="toolbar-card">
+        <form id="scanForm" class="scan-form">
+          <div class="input-with-icon">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <input type="text" id="scanPathInput" placeholder="Enter root projects folder (e.g. C:\Projects or ~/projects)..." required>
+          </div>
+          <button type="submit" id="scanBtn" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <span>Scan Projects</span>
+          </button>
+        </form>
+
+        <div class="toolbar-actions">
+          <button id="openSeanceBtn" class="btn btn-seance" title="Perform a digital séance to resurrect the most viable project">
+            <svg class="seance-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span>Resurrect (Séance)</span>
+          </button>
+
+          <button id="openExportBtn" class="btn btn-secondary" title="Export self-contained offline HTML">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Export Graveyard</span>
+          </button>
+
+          <button id="batchEpitaphBtn" class="btn btn-subtle" title="Batch-generate epitaphs using local Gemma in background">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>
+            <span>Inscribe Epitaphs</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Scan Progress Bar (hidden by default) -->
+      <div id="scanProgressCard" class="scan-progress-card hidden">
+        <div class="scan-progress-info">
+          <span class="scan-spinner"></span>
+          <span id="scanStatusMsg">Excavating directories...</span>
+          <span id="scanCounters" class="scan-counters">0 found</span>
+        </div>
+        <div class="progress-track">
+          <div id="scanProgressBar" class="progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- Filters & Stats row -->
+      <div class="cemetery-subbar">
+        <div class="cemetery-stats">
+          <span class="stat-pill"><strong id="totalDeadCount">0</strong> Buried in Crypts</span>
+          <span class="stat-pill"><strong id="totalLivingCount">0</strong> Among the Living</span>
+          <span class="stat-pill"><strong id="totalTodosCount">0</strong> Unfinished TODOs</span>
+        </div>
+
+        <div class="filter-controls">
+          <div class="search-mini-wrap">
+            <input type="text" id="filterSearchInput" placeholder="Filter by name, cause...">
+          </div>
+          <select id="sortSelect" class="cemetery-select">
+            <option value="age-desc">Oldest Graves First</option>
+            <option value="age-asc">Newest Graves First</option>
+            <option value="commits-desc">Most Commits</option>
+            <option value="todos-desc">Most TODOs</option>
+            <option value="revival-desc">Highest Revival Potential</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <!-- Still Among the Living (Alive & Sleeping repos) -->
+    <section id="livingSection" class="living-section">
+      <div class="section-divider">
+        <span class="divider-icon">🌱</span>
+        <h2 class="section-title">Still Among the Living</h2>
+        <span class="section-subtitle">(Recent commits detected — the cemetery gates remain closed)</span>
+      </div>
+      <div id="livingStrip" class="living-strip-grid">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- The Graveyard Grounds (Dead & Ancient grouped by Year) -->
+    <main class="graveyard-grounds">
+      <div class="section-divider main-cemetery-divider">
+        <span class="divider-icon">⚰️</span>
+        <h2 class="section-title">The Cemetery Grounds</h2>
+        <span class="section-subtitle">Tombstones of abandoned builds, arranged by year of passing</span>
+      </div>
+
+      <div id="cemeterySections" class="cemetery-sections-container">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div id="emptyGraveyardMsg" class="empty-state hidden">
+        <div class="empty-icon">🕯️</div>
+        <h3>The Graveyard is Silent</h3>
+        <p>No dead repositories found yet. Scan a project folder or click <strong>Demo Mode</strong> to populate sample graves.</p>
+      </div>
+    </main>
+
+    <!-- Spooky Ground Gate Footer -->
+    <footer class="graveyard-footer">
+      <div class="iron-fence"></div>
+      <p class="footer-note">Repo Graveyard • Fully Local & Air-Gapped • Gemma 3 Powered • "Ghost in the Machine"</p>
+    </footer>
+  </div>
+
+  <!-- Ghost Story / Tombstone Inspection Modal -->
+  <div id="tombstoneModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal-card tombstone-detail-card">
+      <button id="modalCloseBtn" class="modal-close" aria-label="Close dialog">&times;</button>
+      
+      <div class="tombstone-header-row">
+        <div class="spirit-avatar-wrap">
+          <div class="spirit-orb"></div>
+          <span class="spirit-icon">👻</span>
+        </div>
+        <div class="tombstone-title-wrap">
+          <h2 id="modalRepoName" class="tomb-heading">repo-name</h2>
+          <div class="tombstone-meta-line">
+            <span id="modalLifespan" class="meta-pill">2021 — 2023</span>
+            <span id="modalCauseBadge" class="cause-badge">Abandoned mid-sentence</span>
+            <span id="modalRevivalScore" class="revival-pill">Revival Score: 85</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real Git Facts Grid -->
+      <div class="facts-panel">
+        <h4 class="panel-heading">Grounded Git Facts (From History)</h4>
+        <div class="facts-grid">
+          <div class="fact-item">
+            <span class="fact-label">Total Commits</span>
+            <span id="modalTotalCommits" class="fact-val">0</span>
+          </div>
+          <div class="fact-item">
+            <span class="fact-label">Last Commit</span>
+            <span id="modalDaysAgo" class="fact-val">0 days ago</span>
+          </div>
+          <div class="fact-item">
+            <span class="fact-label">Last Contributor</span>
+            <span id="modalLastAuthor" class="fact-val">dev</span>
+          </div>
+          <div class="fact-item">
+            <span class="fact-label">Unfinished TODOs</span>
+            <span id="modalTodoCount" class="fact-val">0</span>
+          </div>
+        </div>
+
+        <div class="fact-message-box">
+          <span class="fact-label">Final Commit Message</span>
+          <div id="modalLastMessage" class="fact-quote">"..."</div>
+        </div>
+
+        <div class="fact-files-box">
+          <span class="fact-label">Top Modified Files</span>
+          <div id="modalTopFiles" class="fact-files-tags"></div>
+        </div>
+      </div>
+
+      <!-- Ghost Monologue Section -->
+      <div class="ghost-story-section">
+        <div class="story-header-row">
+          <h4 class="story-title">
+            <span class="flicker-flame">🕯️</span>
+            Spirit's Monologue
+            <span id="storyFallbackBadge" class="story-fallback-badge hidden" title="Generated deterministically without AI model">written without the model</span>
+          </h4>
+          <button id="regenStoryBtn" class="btn btn-subtle btn-xs" title="Regenerate story using Gemma">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            Regenerate
+          </button>
+        </div>
+        
+        <div id="ghostStoryBox" class="story-content-box">
+          <div id="ghostStoryText" class="ghost-text">Summoning repository spirit...</div>
+          <span id="storyStreamCursor" class="streaming-cursor hidden"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Séance (Resurrection) Chamber Modal -->
+  <div id="seanceModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal-card seance-card">
+      <button id="seanceCloseBtn" class="modal-close">&times;</button>
+      
+      <div class="seance-altar-header">
+        <div class="seance-candles-row">
+          <div class="seance-candle left-candle" title="Altar Candle">
+            <span class="candle-flame">🕯️</span>
+          </div>
+          <div class="pentagram-orbit">
+            <div class="runic-circle"></div>
+            <div class="seance-glow-pulse"></div>
+            <span class="seance-flame">🔮</span>
+          </div>
+          <div class="seance-candle right-candle" title="Altar Candle">
+            <span class="candle-flame">🕯️</span>
+          </div>
+        </div>
+        <h2 class="seance-title">Digital Séance Chamber</h2>
+        <p class="seance-desc">Summoning the code spirit with the highest revival potential.</p>
+        <div id="seanceIncantation" class="seance-incantation">
+          <span class="incantation-spark">✨</span>
+          <span id="seanceStatusPhrase">Lighting altar candles & awakening Gemma...</span>
+          <span class="incantation-spark">✨</span>
+        </div>
+      </div>
+
+      <div id="seanceCandidateCard" class="seance-candidate-box hidden">
+        <div class="candidate-lead-row">
+          <div>
+            <span class="chosen-badge">🌟 Chosen Vessel</span>
+            <h3 id="seanceCandidateName" class="chosen-name">repo-name</h3>
+            <p id="seanceCandidateStats" class="chosen-stats">0 commits • Abandoned 0 days ago</p>
+          </div>
+          <div class="revival-circle-score">
+            <span id="seanceScoreNum" class="score-large">92</span>
+            <span class="score-label">Revival Index</span>
+          </div>
+        </div>
+
+        <div class="seance-plan-box">
+          <h4 class="plan-heading">
+            <span>📜</span> Concrete 3-Step Resurrection Plan (via Gemma)
+          </h4>
+          <div id="seancePlanText" class="plan-text">
+            Consulting the digital oracle...
+          </div>
+          <span id="seancePlanCursor" class="streaming-cursor hidden"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Standalone Export Modal -->
+  <div id="exportModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal-card export-modal-card">
+      <button id="exportCloseBtn" class="modal-close">&times;</button>
+      
+      <div class="export-header">
+        <span class="export-icon">📜</span>
+        <h2>Export Offline Graveyard</h2>
+        <p>Compile a single self-contained HTML file. No server, no dependencies, no internet required to view.</p>
+      </div>
+
+      <div class="export-form">
+        <label class="toggle-option">
+          <input type="checkbox" id="redactNamesCheckbox">
+          <div class="toggle-text">
+            <strong>Redact Project Names & Paths</strong>
+            <span>Hides proprietary client or private repo names ("Unnamed Project #1"). Perfect for public sharing!</span>
+          </div>
+        </label>
+
+        <div class="export-summary-box">
+          <div class="stat-row">
+            <span>Graveyard Snapshots:</span>
+            <strong id="exportCountNum">0 repositories</strong>
+          </div>
+          <div class="stat-row">
+            <span>Format:</span>
+            <strong>Self-contained .html (with embedded CSS/JS)</strong>
+          </div>
+          <div class="stat-row">
+            <span>Air-Gapped:</span>
+            <strong>Yes (zero CDN, zero remote calls)</strong>
+          </div>
+        </div>
+
+        <button id="confirmExportBtn" class="btn btn-primary btn-block">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Standalone HTML
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
